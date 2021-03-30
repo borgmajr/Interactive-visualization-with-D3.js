@@ -7,3 +7,7 @@ const topRockAlbums = [
  ];
 
  const topAlbumsSection = d3.select('#top-albums');
+
+ topAlbumsSection
+      .append('h3')
+         .text('Top Rock Albums');
