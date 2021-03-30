@@ -41,8 +41,31 @@ const barPadding = 5;
 barChart.selectAll('rect')
    .data(topRockAlbums)
    .join('rect')
-      .attr('width', d => barLenghtScale(d.eq_albums))
+      .attr('width', d => {
+        console.log(d);
+        return barLenghtScale(d.eq_albums)
+      })
       .attr('height', barThickness)
       .attr('x', paddingLeft + 1)
-      .attr('y', (d, i) => barPadding + (barThickness + barPadding) * i)
+      .attr('y', (d, i) => {
+        console.log(i);
+        return barPadding + (barThickness + barPadding) * i
+     })
       .attr('fill', '#a6d854');
+
+barChart.selectAll('.label-value')
+    .data(topRockAlbums)
+    .join('text')
+        .attr('class', 'label label-value')
+        .attr('x', d => paddingLeft + barLenghtScale(d.eq_albums) + 10)
+        .attr('y', (d, i) => (barPadding + (barThickness + barPadding) * i) + 14)
+        .text(d => d.eq_albums / 1000000 + 'M');
+
+barChart.selectAll('.label-value')
+    .data(topRockAlbums)
+    .join('text')
+        .attr('class', 'label label-value')
+        .attr('text-anchor', 'end')
+        .attr('x', d => paddingLeft - 10 )
+        .attr('y', (d, i) => (barPadding + (barThickness + barPadding) * i) + 14)
+        .text(d => d.artist + ', ' + d.title);
