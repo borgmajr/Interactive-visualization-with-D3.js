@@ -34,4 +34,15 @@ const barLenghtScale = d3.scaleLinear()
     .domain([0, 1000000]) // In our data, the number of album-equivalent goes up to about 1,000,000
     .range([0, barChartWidth - paddingLeft - 100]); // Based on the space that we have on screen and the space we need for the labels
 
-console.log(barLenghtScale(700000));
+//console.log(barLenghtScale(700000));
+
+const barThickness = 20;
+const barPadding = 5;
+barChart.selectAll('rect')
+   .data(topRockAlbums)
+   .join('rect')
+      .attr('width', d => barLenghtScale(d.eq_albums))
+      .attr('height', barThickness)
+      .attr('x', paddingLeft + 1)
+      .attr('y', (d, i) => barPadding + (barThickness + barPadding) * i)
+      .attr('fill', '#a6d854');
