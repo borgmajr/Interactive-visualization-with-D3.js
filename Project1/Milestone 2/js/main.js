@@ -34,4 +34,4 @@ const barLenghtScale = d3.scaleLinear()
     .domain([0, 1000000]) // In our data, the number of album-equivalent goes up to about 1,000,000
     .range([0, barChartWidth - paddingLeft - 100]); // Based on the space that we have on screen and the space we need for the labels
 
-//console.log(barLenghtScale(700000));
+console.log(barLenghtScale(700000));
