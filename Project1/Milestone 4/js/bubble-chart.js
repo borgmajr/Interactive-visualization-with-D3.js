@@ -77,8 +77,30 @@ d3.csv('../data/top_albums.csv').then(data => {
                 .attr('r', d => bubblesAreaScale(d.album_sales_millions))
                 .attr('fill', d => colorScale(d.artist));
 
-
-
         
-            
+    const legend = d3.select('.legend-color')
+        .append("ul")
+        .selectAll('.li-albums')
+            .data(musicData)
+            .join('li')
+                .attr('class', 'li-albums');
+    
+    legend.append('span')
+            .attr('class', 'legend-circle')
+            .attr('style', (d, i) => 'background-color:'+ colorScale(d.artist)  );
+
+    legend.append('span')
+            .text(d => d.title + ", "+d.artist)
+            .attr("style", "margin-left: 10px;");
+           
+    
+    // legend
+    //     .append('span')
+    //         .attr('class', 'legend-circle')
+    //         .attr('style', (d, i) => 'background-color:'+ colorScale(d.artist)  );
+        
+
+    // musicData.forEach(datum => {      
+    //     legend.append('div').text(datum.artist);
+    // });
  }
