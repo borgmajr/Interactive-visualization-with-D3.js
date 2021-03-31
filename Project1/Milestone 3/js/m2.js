@@ -42,13 +42,13 @@ barChart.selectAll('rect')
    .data(topRockAlbums)
    .join('rect')
       .attr('width', d => {
-        console.log(d);
+        //console.log(d);
         return barLenghtScale(d.eq_albums)
       })
       .attr('height', barThickness)
       .attr('x', paddingLeft + 1)
       .attr('y', (d, i) => {
-        console.log(i);
+        //console.log(i);
         return barPadding + (barThickness + barPadding) * i
      })
       .attr('fill', '#a6d854');
