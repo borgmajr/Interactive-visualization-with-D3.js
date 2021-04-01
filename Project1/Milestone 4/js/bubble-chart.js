@@ -77,7 +77,7 @@ d3.csv('../data/top_albums.csv').then(data => {
                 .attr('r', d => bubblesAreaScale(d.album_sales_millions))
                 .attr('fill', d => colorScale(d.artist));
 
-        
+    // Legand  
     const legend = d3.select('.legend-color')
         .append("ul")
         .selectAll('.li-albums')
@@ -92,15 +92,63 @@ d3.csv('../data/top_albums.csv').then(data => {
     legend.append('span')
             .text(d => d.title + ", "+d.artist)
             .attr("style", "margin-left: 10px;");
-           
-    
-    // legend
-    //     .append('span')
-    //         .attr('class', 'legend-circle')
-    //         .attr('style', (d, i) => 'background-color:'+ colorScale(d.artist)  );
-        
+  
+    //// Bubble Legand
+    const bubbleLegandHeight = 100;
+    const bubbleLegandWidth = 200;
+    let bubbleLegand = d3.select('.legend-area')
+            .append('svg')
+            .attr('id','areaCircles')
+            .attr('viewbox', [0, 0, bubbleLegandWidth, bubbleLegandHeight])
+            .attr('width', bubbleLegandWidth)
+            .attr('height', bubbleLegandHeight);    
 
-    // musicData.forEach(datum => {      
-    //     legend.append('div').text(datum.artist);
-    // });
+    bubbleLegand.selectAll('circle')
+        .data([.1,.5,1.5])
+        .join('circle')
+            .attr('cx', 50)
+            .attr('cy', 50)
+            .attr('r', d =>  bubblesAreaScale(d) )
+            .attr('fill', '#727a87')
+            .attr('style', (d, i) => "opacity: "+ .4)
+            .attr('id',(d, i) => 'areaCircles'+i);
+    
+    let c = d3.selectAll('#areaCircles circle');
+    bubbleLegand.selectAll('line')
+            .data(c)
+            .join('line')
+                .attr('x1', 50)
+                .attr('y1', (d, i) => {
+                    let circle = d3.select('#areaCircles'+i);
+                    let circleHeight = + circle.node().getBoundingClientRect().height;
+                    circle.attr('cy', bubbleLegandHeight - circleHeight / 2);
+                    return ( bubbleLegandHeight - circleHeight);
+                })
+                .attr('x2', 100)
+                .attr('y2', (d, i) => {
+                    let circle = d3.select('#areaCircles'+i);
+                    let circleHeight = + circle.node().getBoundingClientRect().height;
+                    return ( bubbleLegandHeight - circleHeight);
+                })
+                .attr('stroke', '#333')
+                .attr('stroke-width', 2)
+                .attr('stroke-dasharray', '5 5 5 5');
+
+    bubbleLegand.selectAll('.label-value')
+        .data(c)
+        .join('text')
+            .attr('class', 'label label-value')
+            .attr('text-anchor', 'start')
+            .attr('x', 100 )
+            .attr('y', (d, i) => {
+                let circle = d3.select('#areaCircles'+i);
+                let circleHeight = + circle.node().getBoundingClientRect().height;
+                return ( bubbleLegandHeight - circleHeight+ 5);
+            })
+            .text((d,i) => {
+                let circle = d3.select('#areaCircles'+i);
+                return circle.datum() + 'M';
+            });
+
+    
  }
