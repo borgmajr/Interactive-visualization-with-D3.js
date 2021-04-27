@@ -33,14 +33,16 @@ function createHistogram(data) {
     console.log("maxNumber",maxNumber);
     let xScale = d3.scaleLinear()
             .domain([0, maxNumber])
-            .range([0, width - margin.left - margin.right]);
+            .range([0, width - margin.left - margin.right - 30])
+            .nice();
 
 
     const maxBucketSize = Math.max(...buckets.flatMap(o => o.length));
     console.log("maxBucketSize",maxBucketSize);
     let yScale = d3.scaleLinear()
         .domain([maxBucketSize, 0])
-        .range([0, height - margin.top - margin.bottom]);
+        .range([10, height - margin.top - margin.bottom])
+        .nice();
 
     console.log("xScale",xScale);
 
@@ -62,6 +64,13 @@ function createHistogram(data) {
         .append('g')
             .attr('transform', 'translate('+margin.left+', 0)')
             .call(d3.axisLeft(yScale));
+
+    vizChart
+        .append('text')
+            .attr('text-anchor', 'end')
+            .attr('x', width - margin.right)
+            .attr('y', height - margin.bottom)
+            .text('Earnings in 2019 (USD)');
 
 };
 
