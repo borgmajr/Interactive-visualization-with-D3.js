@@ -92,6 +92,19 @@ function createHistogram(data) {
               })
             .attr("transform",  "translate(" + margin.left + "," + 0 + ")");;
               
+    
+     var line = d3.line()
+            .x((d, i) => { return xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)); }) 
+            .y((d, i) => { return yScale(d.length); }) 
+            .curve(d3.curveCatmullRom);
+     
+    vizChart.append("path")
+            .datum(buckets) 
+            .attr("class", "line") 
+            .attr("d", line)
+            .style("stroke", "#000")
+            .style("fill", "none")
+            .style("stroke-width", "3"); 
 
 };
 
