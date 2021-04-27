@@ -106,6 +106,24 @@ function createHistogram(data) {
             .style("fill", "none")
             .style("stroke-width", "3"); 
 
+    var areaGenerator = d3.area()
+            .x((d, i) => { return xScale(d.x0) + (xScale(d.x1) - xScale(d.x0)); }) 
+            .y0((d, i) => { return height - margin.bottom - margin.top; })
+            .y1((d, i) => { return yScale(d.length); }) 
+            .curve(d3.curveCatmullRom);
+        
+        var area = areaGenerator(buckets);
+        
+        // Create a path element and set its d attribute
+        vizChart
+            .append('path')
+            .datum(buckets) 
+            .attr("class", "area") 
+            .attr('d', area)
+            .attr('fill', 'yellow')
+            .attr('fill-opacity', 0.2)
+            .attr('stroke', 'none');
+
 };
 
 // Dufour_LP_M1.md step 5 
