@@ -23,7 +23,7 @@ createViz = (data) => {
   // Create bins for each sport, men and women
   const sports = [ 'basketball', 'golf', 'tennis'];
   const genders = ['men', 'women'];
-  const bins = [];
+  const binContainer = [];
 
   sports.forEach(sport => {
     genders.forEach(gender => {
@@ -41,9 +41,52 @@ createViz = (data) => {
           )
         )
       };
-      bins.push(binsSet);
+      binContainer.push(binsSet);
     });
   });
-  console.log(bins);
+  console.log(binContainer);
+
+  binContainer.forEach(b => {
+    injectScales(b);
+  });
+
+  console.log(binContainer);
+
+  const maxNumber = Math.max(...binContainer.map(o => o.maxNumber));
+  const maxBucketSize = Math.max(...binContainer.map(o => o.maxBucketSize));
+  console.log("maxNumber", maxNumber);
+  console.log("maxBucketSize", maxBucketSize);
+
+  const maxXScale = binContainer.filter(o => o.maxNumber === maxNumber);
+  console.log("maxXScale", maxXScale);
 
 };
+
+function injectScales(binContainer){
+      //console.log("xvals",xvals);
+      const maxNumber = Math.max(...binContainer.bins.flat());
+      //console.log("maxNumber",maxNumber);
+
+      binContainer.maxNumber = maxNumber;
+
+      let xScale = d3.scaleLinear()
+              .domain([0, maxNumber])
+              .range([0, width - margin.left - margin.right - 30])
+              .nice();
+
+              binContainer.xScale = xScale;
+  
+      const maxBucketSize = Math.max(...binContainer.bins.flatMap(o => o.length));
+      //console.log("maxBucketSize",maxBucketSize);
+
+      binContainer.maxBucketSize = maxBucketSize;
+
+      let yScale = d3.scaleLinear()
+          .domain([maxBucketSize, 0])
+          .range([10, height - margin.top - margin.bottom])
+          .nice();
+  
+      //console.log("xScale",xScale);
+
+      binContainer.xScale = xScale;
+}
