@@ -72,6 +72,27 @@ function createHistogram(data) {
             .attr('y', height - margin.bottom)
             .text('Earnings in 2019 (USD)');
 
+    vizChart
+        .selectAll("rect")
+            .data(buckets)
+            .join('rect')
+               .style("fill", "#69b3a2")
+               .style("stroke", "1px solid white")
+              .attr("x", d => {
+                return xScale(d.x0);
+              })
+              .attr("y", d => {
+                return yScale(d.length);
+              })
+              .attr("width", d => {
+                return xScale(d.x1) - xScale(d.x0) -1;
+              })
+              .attr("height", d => {
+                return yScale(0) - yScale(d.length);
+              })
+            .attr("transform",  "translate(" + margin.left + "," + 0 + ")");;
+              
+
 };
 
 // Dufour_LP_M1.md step 5 
