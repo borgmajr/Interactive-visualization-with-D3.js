@@ -144,33 +144,67 @@ function createAreaGenerator(binContainer, xScale, yScale){
 
     if(binContainer.gender === 'women'){
 
-      var areaGeneratorWomen = d3.area()
-            .y((d, i) => { 
-              return yScale(d.x1); 
-            }) 
-            .x0((d, i) => { 
-              return  xScale(binContainer.sport) + pxSpacing - 75
-            })
-            .x1((d, i) => { 
-              return xScale(binContainer.sport) + pxSpacing - 75 - 120
-            }) 
-            .curve(d3.curveCatmullRom);
+
+      const areaGeneratorWomen = d3.area()
+        .x0(d => {
+            //margin.left - xScale(d.length)
+            return  xScale(binContainer.sport) + pxSpacing - 75
+        })
+        .x1(d => {
+            //margin.left
+            return  xScale(binContainer.sport) + pxSpacing - 75
+        })
+        .y(d => {
+            //yScale(d.x1) + ((yScale(d.x0) - yScale(d.x1)) / 2)
+            return yScale(d.x1); 
+        })
+        .curve(d3.curveCatmullRom);
+      
+      // var areaGeneratorWomen = d3.area()
+      //       .y((d, i) => { 
+      //         return yScale(d.x1); 
+      //       }) 
+      //       .x0((d, i) => { 
+      //         return  xScale(binContainer.sport) + pxSpacing - 75
+      //       })
+      //       .x1((d, i) => { 
+      //         return xScale(binContainer.sport) + pxSpacing - 75 - 120
+      //       }) 
+      //       .curve(d3.curveCatmullRom);
 
       return areaGeneratorWomen(bins);
     }
     if(binContainer.gender === 'men'){
 
-      var areaGeneratorMen = d3.area()
-        .y((d, i) => { 
-          return yScale(d.x1); 
-        }) 
-        .x0((d, i) => { 
-          return xScale(binContainer.sport) + pxSpacing - 75;
-        })
-        .x1((d, i) => { 
-          return xScale(binContainer.sport) + pxSpacing - 75 + 120
-        }) 
-        .curve(d3.curveCatmullRom);
+        const areaGeneratorMen = d3.area()
+          .x0(d => {
+              //margin.left
+              return xScale(binContainer.sport) + pxSpacing - 75;
+          })
+          .x1(d => {
+              //margin.left + xScale(d.length)
+              return xScale(binContainer.sport) + pxSpacing - 75 + 120
+          })
+          .y(d => {
+              //return yScale(d.x1) + ((yScale(d.x0) - yScale(d.x1)) / 2)
+              return yScale(d.x1); 
+          })
+          .curve(d3.curveCatmullRom);
+      
+      // var areaGeneratorMen = d3.area()
+      //   .y((d, i) => { 
+      //     return yScale(d.x1); 
+      //     //return yScale(d.x1) + ((yScale(d.x0) - yScale(d.x1)) / 2)
+      //   }) 
+      //   .x0((d, i) => { 
+      //     return xScale(binContainer.sport) + pxSpacing - 75;
+      //     //return margin.left
+      //   })
+      //   .x1((d, i) => { 
+      //     return xScale(binContainer.sport) + pxSpacing - 75 + 120
+      //     //return xScale(d.length);
+      //   }) 
+      //   .curve(d3.curveCatmullRom);
 
       return areaGeneratorMen(bins);
     }
