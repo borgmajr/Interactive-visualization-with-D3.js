@@ -11,6 +11,8 @@ d3.csv("./data/pay_by_gender_all.csv").then(data => {
   createViz(data);
 });
 
+const sports = [ 'basketball', 'golf', 'tennis'];
+const genders = ['men', 'women'];
 
 // Create Visualization
 createViz = (data) => {
@@ -21,8 +23,7 @@ createViz = (data) => {
   console.log(data);
 
   // Create bins for each sport, men and women
-  const sports = [ 'basketball', 'golf', 'tennis'];
-  const genders = ['men', 'women'];
+
   const binContainer = [];
 
   sports.forEach(sport => {
@@ -69,10 +70,10 @@ createViz = (data) => {
   var xScale = d3.scaleBand()
       .domain(binContainer.map(o => o.sport))
       .range([ 0, width - margin.left - margin.right ])
-      .padding(0.05)   
+      //.padding(0.05)   
 
   const yScale = d3.scaleLinear()
-    .domain([0, maxNumber + 1000000])
+    .domain([0, maxNumber + 15000000])
     .range([height - margin.bottom - margin.top, margin.top]);
 
 
@@ -99,10 +100,80 @@ createViz = (data) => {
           .append('text')
               .attr('text-anchor', 'start')
               .attr('x', margin.left)
-              .attr('y', margin.top)
+              .attr('y', margin.top - 5)
               .text('Earnings in 2019 (USD)');
 
 // Dufour_LP_M1.md step 8
+
+//https://www.d3-graph-gallery.com/graph/violin_basicDens.html
+
+
+let spaceBetweenSports = 60;
+      
+vizChart
+    .append('g')
+      .attr('class', 'violins')
+    .selectAll('.violin')
+    .data(binContainer)
+    .join('path')
+      .attr('class', d => `violin violin-${d.sport} violin-${d.gender}`)
+      .attr('d', d => 
+        createAreaGenerator(d, xScale, yScale)
+      )
+      // .attr('transform', d => {
+      //   const index = sports.indexOf(d.sport) + 1;
+      //   const translationX = index * spaceBetweenSports;
+      //   return `translate(${translationX}, 0)`; // The margin.left part of the translation is applied in the areaGenerator functions to avoid negative x values for women
+      // })
+      .attr('fill', d => d.gender === 'women' ? colorWomen : colorMen)
+      .attr('fill-opacity', 0.8)
+      .attr('stroke', 'none');
+
+};
+
+function createAreaGenerator(binContainer, xScale, yScale){
+  // const sports = [ 'basketball', 'golf', 'tennis'];
+  // const genders = ['men', 'women'];  
+
+    let bins = binContainer.bins;
+
+    let xIdx = sports.findIndex(o => o === binContainer.sport);
+    let pxSpacing = ((width) / 3) - margin.right - margin.left;
+
+    let pxOfset = pxSpacing * (xIdx + 1);
+
+    if(binContainer.gender === 'women'){
+
+      var areaGeneratorWomen = d3.area()
+            .y((d, i) => { 
+              return yScale(d.x1); 
+            }) 
+            .x0((d, i) => { 
+              return  xScale(binContainer.sport) + pxSpacing - 75
+            })
+            .x1((d, i) => { 
+              return xScale(binContainer.sport) + pxSpacing - 75 - 120
+            }) 
+            .curve(d3.curveCatmullRom);
+
+      return areaGeneratorWomen(bins);
+    }
+    if(binContainer.gender === 'men'){
+
+      var areaGeneratorMen = d3.area()
+        .y((d, i) => { 
+          return yScale(d.x1); 
+        }) 
+        .x0((d, i) => { 
+          return xScale(binContainer.sport) + pxSpacing - 75;
+        })
+        .x1((d, i) => { 
+          return xScale(binContainer.sport) + pxSpacing - 75 + 120
+        }) 
+        .curve(d3.curveCatmullRom);
+
+      return areaGeneratorMen(bins);
+    }
 
 };
 
