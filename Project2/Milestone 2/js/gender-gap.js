@@ -6,236 +6,123 @@ const colorWomen = '#A6BF4B';
 const colorMenCircles = '#BF9B30';
 const colorWomenCircles = '#718233';
 
-d3.csv("./data/pay_by_gender_all.csv").then(data => {
+// Load data here
+d3.csv('./data/pay_by_gender_all.csv').then(data => {
+
+  data.forEach(datum => {
+    // Convert earning to number
+    datum.earnings_USD_2019 = +datum.earnings_USD_2019.replaceAll(',', '');
+  });
+  console.log(data);
 
   createViz(data);
 });
 
-const sports = [ 'basketball', 'golf', 'tennis'];
-const genders = ['men', 'women'];
-
 // Create Visualization
 createViz = (data) => {
 
-  data.forEach(d => {
-    d.earnings_USD_2019 = +d.earnings_USD_2019.replaceAll(',', '');
-  });
-  console.log(data);
-
   // Create bins for each sport, men and women
-
-  const binContainer = [];
+  const sports = [ 'basketball', 'golf', 'tennis'];
+  const genders = ['men', 'women'];
+  const bins = [];
 
   sports.forEach(sport => {
     genders.forEach(gender => {
       const binsSet = {
         sport: sport,
         gender: gender,
-        bins: d3.bin()(
-          data.filter(
-            o => { 
-                return sport === o.sport &&  gender === o.gender
-            }
-          ).map(o => { 
-              return o.earnings_USD_2019
-            }
-          )
-        )
+        bins: d3.bin()(data.filter(datum => datum.sport === sport && datum.gender === gender).map(datum => datum.earnings_USD_2019))
       };
-      binContainer.push(binsSet);
+      bins.push(binsSet);
     });
   });
-  console.log(binContainer);
-
-  binContainer.forEach(b => {
-    injectScales(b);
-  });
-
-  console.log(binContainer);
-
-  const maxNumber = Math.max(...binContainer.map(o => o.maxNumber));
-  const maxBucketSize = Math.max(...binContainer.map(o => o.maxBucketSize));
-  console.log("maxNumber", maxNumber);
-  console.log("maxBucketSize", maxBucketSize);
-
-  const maxWidth = 60;
-
-  // const maxYScale = binContainer.filter(o => o.maxNumber === maxNumber)[0].yScale;
-  // console.log("maxYScale", maxYScale);
-
-  // const xScale = d3.scaleLinear()
-  //   .domain([0, maxBucketSize])
-  //   .range([0, (maxWidth*6)]);
-
-  var xScale = d3.scaleBand()
-      .domain(binContainer.map(o => o.sport))
-      .range([ 0, width - margin.left - margin.right ])
-      //.padding(0.05)   
-
-  const yScale = d3.scaleLinear()
-    .domain([0, maxNumber + 15000000])
-    .range([height - margin.bottom - margin.top, margin.top]);
-
-
-  const vizDiv = d3.select('#viz');
-
-  const vizChart = vizDiv
-      .append('svg')
-          .attr('viewbox', [0, 0, width, height])
-          .attr('width', width)
-          .attr('height', height);    
-
-  vizChart
-      .append('g')
-          .attr('transform', `translate(${margin.left}, ${height - margin.bottom - margin.top})`)
-          .call(d3.axisBottom(xScale));   
+  console.log(bins);
   
-      
-  vizChart
-      .append('g')
-          .attr('transform', 'translate('+margin.left+', 0)')
-          .call(d3.axisLeft(yScale));
+  // Scales
+  const binsMaxLength = d3.max(bins.map(bin => bin.bins), d => d.length);  // We need to know the max length of a bin in order to generate our horizontal domain
+  const maxEarning = d3.max(data, d => d.earnings_USD_2019); // We also need to max the max earning in our dataset to generate our vertical domain
+  const xMaxLength = 60; // The max horizontal length of each violin. You can adapt this value to your own preference.
 
-  vizChart
-          .append('text')
-              .attr('text-anchor', 'start')
-              .attr('x', margin.left)
-              .attr('y', margin.top - 5)
-              .text('Earnings in 2019 (USD)');
+  const xScale = d3.scaleLinear()
+    .domain([0, binsMaxLength])
+    .range([0, xMaxLength]);
+  const yScale = d3.scaleLinear()
+    .domain([0, maxEarning + 5000000])
+    .range([height - margin.bottom, margin.top]);
 
-// Dufour_LP_M1.md step 8
+  // Append svg
+  const svg = d3.select('#viz')  
+    .append('svg')
+      .attr('viewbox', [0, 0, width, height])
+      .attr('width', width)
+      .attr('height', height);
 
-//https://www.d3-graph-gallery.com/graph/violin_basicDens.html
+  // Append x-axis
+  const spaceBetweenSports = (width - margin.left - margin.right) / (sports.length + 1);
+  const xAxisGroup = svg
+    .append('g')
+      .attr('class', 'x-axis-group');
+  xAxisGroup
+    .append('line')
+      .attr('class', 'x-axis')
+      .attr('x1', margin.left)
+      .attr('x2', width - margin.right)
+      .attr('y1', height - margin.bottom + 1)
+      .attr('y2', height - margin.bottom + 1)
+      .attr('stroke', 'black');
+  xAxisGroup
+    .selectAll('.sport-label')
+    .data(sports)
+    .join('text')
+      .attr('x', (d, i) => margin.left + ((i + 1) * spaceBetweenSports))
+      .attr('y', height - 10)
+      .attr('text-anchor', 'middle')
+      .text(d => d.charAt(0).toUpperCase() + d.slice(1));
 
+  // Append y-axis
+  const yAxis = d3.axisLeft(yScale.nice());
+  const yAxisGroup = svg
+    .append('g')
+      .attr('class', 'y-axis-group')
+      .attr('transform', `translate(${margin.left}, 0)`)
+    .call(yAxis);
+  yAxisGroup
+    .append('text')
+      .attr('x', -margin.left)
+      .attr('y', 12)
+      .text('Earnings in 2019 (USD)')
+      .attr('text-anchor', 'start')
+      .attr('fill', '#3B3B39') // To compensate for the fill none applied by D3 to the axis group
+      .style('font-size', '16px'); // To compensate for the font-size applied by D3 to the axis group
+    
 
-let spaceBetweenSports = 60;
-      
-vizChart
+  // Append area
+  const areaGeneratorMen = d3.area()
+    .x0(margin.left)
+    .x1(d => margin.left + xScale(d.length))
+    .y(d => yScale(d.x1) + ((yScale(d.x0) - yScale(d.x1)) / 2))
+    .curve(d3.curveCatmullRom);
+  const areaGeneratorWomen = d3.area()
+  .x0(d => margin.left - xScale(d.length))
+  .x1(margin.left)
+  .y(d => yScale(d.x1) + ((yScale(d.x0) - yScale(d.x1)) / 2))
+  .curve(d3.curveCatmullRom);
+
+  svg
     .append('g')
       .attr('class', 'violins')
     .selectAll('.violin')
-    .data(binContainer)
+    .data(bins)
     .join('path')
       .attr('class', d => `violin violin-${d.sport} violin-${d.gender}`)
-      .attr('d', d => 
-        createAreaGenerator(d, xScale, yScale)
-      )
-      // .attr('transform', d => {
-      //   const index = sports.indexOf(d.sport) + 1;
-      //   const translationX = index * spaceBetweenSports;
-      //   return `translate(${translationX}, 0)`; // The margin.left part of the translation is applied in the areaGenerator functions to avoid negative x values for women
-      // })
+      .attr('d', d => d.gender === 'women' ? areaGeneratorWomen(d.bins) : areaGeneratorMen(d.bins))
+      .attr('transform', d => {
+        const index = sports.indexOf(d.sport) + 1;
+        const translationX = index * spaceBetweenSports;
+        return `translate(${translationX}, 0)`; // The margin.left part of the translation is applied in the areaGenerator functions to avoid negative x values for women
+      })
       .attr('fill', d => d.gender === 'women' ? colorWomen : colorMen)
       .attr('fill-opacity', 0.8)
       .attr('stroke', 'none');
-
-};
-
-function createAreaGenerator(binContainer, xScale, yScale){
-  // const sports = [ 'basketball', 'golf', 'tennis'];
-  // const genders = ['men', 'women'];  
-
-    let bins = binContainer.bins;
-
-    let xIdx = sports.findIndex(o => o === binContainer.sport);
-    let pxSpacing = ((width) / 3) - margin.right - margin.left;
-
-    let pxOfset = pxSpacing * (xIdx + 1);
-
-    if(binContainer.gender === 'women'){
-
-
-      const areaGeneratorWomen = d3.area()
-        .x0(d => {
-            //margin.left - xScale(d.length)
-            return  xScale(binContainer.sport) + pxSpacing - 75
-        })
-        .x1(d => {
-            //margin.left
-            return  xScale(binContainer.sport) + pxSpacing - 75
-        })
-        .y(d => {
-            //yScale(d.x1) + ((yScale(d.x0) - yScale(d.x1)) / 2)
-            return yScale(d.x1); 
-        })
-        .curve(d3.curveCatmullRom);
-      
-      // var areaGeneratorWomen = d3.area()
-      //       .y((d, i) => { 
-      //         return yScale(d.x1); 
-      //       }) 
-      //       .x0((d, i) => { 
-      //         return  xScale(binContainer.sport) + pxSpacing - 75
-      //       })
-      //       .x1((d, i) => { 
-      //         return xScale(binContainer.sport) + pxSpacing - 75 - 120
-      //       }) 
-      //       .curve(d3.curveCatmullRom);
-
-      return areaGeneratorWomen(bins);
-    }
-    if(binContainer.gender === 'men'){
-
-        const areaGeneratorMen = d3.area()
-          .x0(d => {
-              //margin.left
-              return xScale(binContainer.sport) + pxSpacing - 75;
-          })
-          .x1(d => {
-              //margin.left + xScale(d.length)
-              return xScale(binContainer.sport) + pxSpacing - 75 + 120
-          })
-          .y(d => {
-              //return yScale(d.x1) + ((yScale(d.x0) - yScale(d.x1)) / 2)
-              return yScale(d.x1); 
-          })
-          .curve(d3.curveCatmullRom);
-      
-      // var areaGeneratorMen = d3.area()
-      //   .y((d, i) => { 
-      //     return yScale(d.x1); 
-      //     //return yScale(d.x1) + ((yScale(d.x0) - yScale(d.x1)) / 2)
-      //   }) 
-      //   .x0((d, i) => { 
-      //     return xScale(binContainer.sport) + pxSpacing - 75;
-      //     //return margin.left
-      //   })
-      //   .x1((d, i) => { 
-      //     return xScale(binContainer.sport) + pxSpacing - 75 + 120
-      //     //return xScale(d.length);
-      //   }) 
-      //   .curve(d3.curveCatmullRom);
-
-      return areaGeneratorMen(bins);
-    }
-
-};
-
-function injectScales(binContainer){
-      //console.log("xvals",xvals);
-      const maxNumber = Math.max(...binContainer.bins.flat());
-      //console.log("maxNumber",maxNumber);
-
-      binContainer.maxNumber = maxNumber;
-
-      // let xScale = d3.scaleLinear()
-      //         .domain([0, maxNumber])
-      //         .range([0, width - margin.left - margin.right - 30])
-      //         .nice();
-
-      // binContainer.xScale = xScale;
   
-      const maxBucketSize = Math.max(...binContainer.bins.flatMap(o => o.length));
-      //console.log("maxBucketSize",maxBucketSize);
-
-      binContainer.maxBucketSize = maxBucketSize;
-
-      // let yScale = d3.scaleLinear()
-      //     .domain([maxBucketSize, 0])
-      //     .range([10, height - margin.top - margin.bottom])
-      //     .nice();
-
-      // //console.log("xScale",xScale);
-
-      // binContainer.yScale = yScale;
-}
+};
