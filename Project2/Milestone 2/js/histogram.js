@@ -126,4 +126,3 @@ function createHistogram(data) {
 
 };
 
-// Dufour_LP_M1.md step 5 

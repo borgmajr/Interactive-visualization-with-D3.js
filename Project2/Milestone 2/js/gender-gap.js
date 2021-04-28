@@ -102,6 +102,8 @@ createViz = (data) => {
               .attr('y', margin.top)
               .text('Earnings in 2019 (USD)');
 
+// Dufour_LP_M1.md step 8
+
 };
 
 function injectScales(binContainer){
