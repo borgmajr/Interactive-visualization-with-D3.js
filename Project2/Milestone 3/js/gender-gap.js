@@ -136,4 +136,33 @@ createViz = (data) => {
         .force('forceY', d3.forceY(d => yScale(d.earnings_USD_2019)).strength(10))
         .force('collide', d3.forceCollide(circlesRadius + circlesPadding))
         .stop();   
+
+
+    const numIterations = 300;
+    for (let i = 0; i < numIterations; i++) {
+        simulation.tick();
+    }
+  
+    simulation.stop();      
+
+    console.log("tennisDataMen", tennisDataMen);
+    
+
+    // step 3
+
+    let circles = svg.selectAll('circle')
+      .data(tennisDataMen)
+      .join('circle')
+          .attr('cx', d => 
+                d.x 
+          )
+          .attr('cy', d => 
+                d.y
+          )
+          .attr('r', d => 
+                circlesRadius
+          )
+          .attr('fill', 
+                colorMenCircles
+          );
 };
