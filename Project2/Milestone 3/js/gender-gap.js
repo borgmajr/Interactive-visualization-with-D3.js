@@ -127,15 +127,52 @@ createViz = (data) => {
       .attr('fill', d => d.gender === 'women' ? colorWomen : colorMen)
       .attr('fill-opacity', 0.8)
       .attr('stroke', 'none');
-  
-    let tennisDataMen = data.filter(o => o.sport === 'tennis' && o.gender === 'men');
-    console.log("tennisDataMen", tennisDataMen);
 
-    const simulation = d3.forceSimulation(tennisDataMen)
-        .force('forceX', d3.forceX(margin.left + (3 * spaceBetweenSports)).strength(0.1))
-        .force('forceY', d3.forceY(d => yScale(d.earnings_USD_2019)).strength(10))
-        .force('collide', d3.forceCollide(circlesRadius + circlesPadding))
-        .stop();   
+     ////////////////////////////////////////// 
+
+
+    // let tennisDataMen = data.filter(o => o.sport === 'tennis' && o.gender === 'men');
+    // console.log("tennisDataMen", tennisDataMen);
+
+    
+
+    const simulation = d3.forceSimulation(data)
+      // .force('forceX', datum => {
+      //   const scaleindex = sports.indexOf(datum.sport) + 1;
+
+      //   return d3.forceX(margin.left + (scaleindex * spaceBetweenSports)).strength(0.1)
+      // })
+      .force('forceX', d3.forceX(datum => {
+        const scaleindex = sports.indexOf(datum.sport) + 1;
+        return margin.left + (scaleindex * spaceBetweenSports);
+      }).strength(0.1))
+      .force('forceY', d3.forceY(d => yScale(d.earnings_USD_2019) ).strength(10))
+      .force('collide', d3.forceCollide(circlesRadius + circlesPadding))
+      .force('axis', () => {
+        data.forEach(datum => {
+          const scaleindex = sports.indexOf(datum.sport) + 1;
+
+          if (datum.y > height - margin.bottom) {
+            datum.vy -= 0.001 * datum.y;
+          }
+
+          if(datum.gender === 'men' ){
+            if (datum.x < (margin.left + (scaleindex * spaceBetweenSports))) {
+              datum.vx += 0.01 * datum.x;
+            }
+          }
+
+          if(datum.gender === 'women'){
+            if (datum.x > (margin.left + (scaleindex * spaceBetweenSports))) {
+              datum.vx -= 0.01 * datum.x;
+            }
+          }
+          
+        });
+      })
+      .stop();
+
+
 
 
     const numIterations = 300;
@@ -145,13 +182,13 @@ createViz = (data) => {
   
     simulation.stop();      
 
-    console.log("tennisDataMen", tennisDataMen);
+    console.log("data", data);
     
 
     // step 3
 
     let circles = svg.selectAll('circle')
-      .data(tennisDataMen)
+      .data(data)
       .join('circle')
           .attr('cx', d => 
                 d.x 
@@ -162,7 +199,7 @@ createViz = (data) => {
           .attr('r', d => 
                 circlesRadius
           )
-          .attr('fill', 
-                colorMenCircles
-          );
+          .attr('fill', d => {
+                return d.gender === 'men' ? colorMenCircles : colorWomenCircles;
+          });
 };
