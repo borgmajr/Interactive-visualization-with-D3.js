@@ -190,6 +190,14 @@ createViz = (data) => {
     let circles = svg.selectAll('circle')
       .data(data)
       .join('circle')
+          .on('mouseover', (event, d) => {
+            console.log(event, d);
+            handleMouseOver(event, d);
+          })
+          .on('mouseout', (event, d) => {
+            console.log(event, d);
+            handleMouseOut(event, d);
+          })
           .attr('cx', d => 
                 d.x 
           )
@@ -201,5 +209,31 @@ createViz = (data) => {
           )
           .attr('fill', d => {
                 return d.gender === 'men' ? colorMenCircles : colorWomenCircles;
-          });
+          })
+         ;
 };
+
+const tooltip = d3.select('.tooltip');
+function handleMouseOver(mousePt, datum){
+        tooltip
+            .style('top',(mousePt.clientY +10)+'px')
+            .style('left',(mousePt.clientX+10)+'px')
+            .classed('visible', true);
+
+   const name = d3.select('.name');
+   name.text(datum.name);
+
+   const home = d3.select('.home');
+   home.text(datum.country);
+
+   const salary = d3.select('.salary');
+   salary.text(datum.earnings_USD_2019);
+};
+
+function handleMouseOut(mousePt, datum){
+  tooltip
+      .style('top','-1000px')
+      .style('left','-1000px')
+      .classed('visible', false);
+};
+
