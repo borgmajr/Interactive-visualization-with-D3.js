@@ -126,7 +126,28 @@ createViz = (data) => {
       })
       .attr('fill', d => d.gender === 'women' ? colorWomen : colorMen)
       .attr('fill-opacity', 0.8)
-      .attr('stroke', 'none');
+      .attr('stroke', 'none')
+      .style("filter", "url(#glow)");
+
+////////////////////////////////////////
+
+// Append container for the effect: defs
+const defs = svg.append('defs');
+
+// Add filter for the glow effect
+const filter = defs
+   .append('filter')
+      .attr('id', 'glow');
+filter
+   .append('feGaussianBlur')
+      .attr('stdDeviation', '3.5')
+      .attr('result', 'coloredBlur');
+const feMerge = filter
+   .append('feMerge');
+feMerge.append('feMergeNode')
+   .attr('in', 'coloredBlur');
+feMerge.append('feMergeNode')
+   .attr('in', 'SourceGraphic');
 
      ////////////////////////////////////////// 
 
@@ -209,8 +230,35 @@ createViz = (data) => {
           )
           .attr('fill', d => {
                 return d.gender === 'men' ? colorMenCircles : colorWomenCircles;
-          })
-         ;
+          });
+
+   
+          svg.append('text')
+              .attr('text-anchor', 'start')
+              .attr('x', margin.left + 50)
+              .attr('y', margin.top + 50)
+              .text('Women');
+          svg.append('rect')
+              .attr('x', margin.left + 20)
+              .attr('y', margin.top + 35)
+              .attr('width', 15)
+              .attr('height', 15)
+              .attr('stroke', 'black')
+              .attr('fill', colorWomen);
+
+          svg.append('text')
+              .attr('text-anchor', 'start')
+              .attr('x', margin.left + 50)
+              .attr('y', margin.top + 75)
+              .text('Men');
+          svg.append('rect')
+              .attr('x', margin.left + 20)
+              .attr('y', margin.top + 65)
+              .attr('width', 15)
+              .attr('height', 15)
+              .attr('stroke', 'black')
+              .attr('fill', colorMen);
+    
 };
 
 const tooltip = d3.select('.tooltip');
