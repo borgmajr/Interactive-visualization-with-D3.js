@@ -97,13 +97,29 @@ const createViz = (data) => {
   var y_axis = d3.axisLeft().scale(yscale);
 
   svg.append("g")
-    .attr("transform", "translate(" + (margin.right) + ", " + (-margin.top + margin.bottom) + ")")
+    .attr("transform", "translate(" + (margin.right + 25) + ", " + (-margin.top + margin.bottom) + ")")
     .call(y_axis);
 
 
+  // text label for the y axis
+  svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 )
+    .attr("x", 0 - (height / 2))
+    .attr("dy", "1em")
+    .attr("fill", "white")
+    .style("text-anchor", "middle")
+    .text("Number of Nominations");
+
   svg.append("g")
-    .attr("transform", "translate(" + (margin.right) + ", " + (height-margin.top) + ")")
+    .attr("transform", "translate(" + (margin.right + 25) + ", " + (height - margin.top) + ")")
     .call(x_axis)
 
+  // text label for the x axis
+  svg.append("text")
+    .attr("transform", "translate(" + (width / 2) + " ," + (height - margin.bottom - 20 ) + ")")
+    .attr("fill", "white")
+    .style("text-anchor", "middle")
+    .text("Year");
 
 };
