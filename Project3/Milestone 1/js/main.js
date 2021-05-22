@@ -196,27 +196,4 @@ svg.selectAll("mylabels")
     .text(d => d.label);
 
 
-// const legText = legSvg
-//       .append('text')
-//         .data(groups)
-//         .join("text")
-//           //.attr('text-anchor', 'start')
-//           .attr('x', (d,i) => i *50)
-//           .attr('y', height -margin.bottom)
-//           .text(d => d.label);
-        
-//  const legRec = legSvg
-//         .append('rect')
-//           .data(groups)
-//           .join("rect")
-//             .attr('x', (d,i) => i *50)
-//             .attr('y', height -margin.bottom)
-//             .attr('width', 15)
-//             .attr('height', 15)
-//             //.attr('stroke', 'black')
-//             .attr('fill', function(d, i){
-//                   return color(d);
-//             });
-
-
 };
