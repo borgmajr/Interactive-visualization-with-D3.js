@@ -75,7 +75,7 @@ d3.csv('./data/academy_awards.csv').then(data => {
 
 // Create your visualization here
 const createViz = (data) => {
-  console.log(data);
+  //console.log(data);
 
   var svg = d3.select("#viz")
     .append("svg")
@@ -85,7 +85,7 @@ const createViz = (data) => {
     //https://github.com/d3/d3-array/blob/v2.12.1/README.md#extent
   var xscale = d3.scaleLinear()
     .domain(d3.extent(data, function (d) { return d.year }))
-    .range([0, width - margin.left]);
+    .range([0, width - margin.left - 10]);
 
   var yscale = d3.scaleLinear()
     .domain([0, d3.max(data, function (d) { return d.nominees_total })])
@@ -97,7 +97,7 @@ const createViz = (data) => {
   var y_axis = d3.axisLeft().scale(yscale);
 
   svg.append("g")
-    .attr("transform", "translate(" + (margin.right + 25) + ", " + (-margin.top + margin.bottom) + ")")
+    .attr("transform", "translate(" + (margin.right + 20) + ", " + (-margin.top + margin.bottom) + ")")
     .call(y_axis);
 
 
@@ -105,21 +105,118 @@ const createViz = (data) => {
   svg.append("text")
     .attr("transform", "rotate(-90)")
     .attr("y", 0 )
-    .attr("x", 0 - (height / 2))
+    .attr("x", -10 - (height / 2))
     .attr("dy", "1em")
     .attr("fill", "white")
     .style("text-anchor", "middle")
     .text("Number of Nominations");
 
   svg.append("g")
-    .attr("transform", "translate(" + (margin.right + 25) + ", " + (height - margin.top) + ")")
+    .attr("transform", "translate(" + (margin.right + 20) + ", " + (height - margin.top) + ")")
     .call(x_axis)
 
   // text label for the x axis
   svg.append("text")
-    .attr("transform", "translate(" + (width / 2) + " ," + (height - margin.bottom - 20 ) + ")")
+    .attr("transform", "translate(" + (width / 2) + " ," + (height - margin.bottom ) + ")")
     .attr("fill", "white")
     .style("text-anchor", "middle")
     .text("Year");
+
+    ///////////////////
+    console.log(data);
+
+  let keys = ["nominees_white","nominees_black","nominees_hispanic","nominees_asian"];
+
+  var color = d3.scaleOrdinal()
+    .domain(keys)
+    .range(d3.schemeSet2);
+    
+    var stack = d3.stack()
+          .keys(keys)
+          .order(d3.stackOrderAscending)
+          .offset(d3.stackOffsetNone);
+
+    let series = stack(data);
+    console.log(series);
+
+    var area = d3.area()
+          .x(function(d) { 
+              return xscale(d.data.year); 
+          })
+          .y0(function(d) { 
+              return yscale(d[0]); 
+          })
+          .y1(function(d) { 
+              return yscale(d[1]); 
+          })
+          .curve(d3.curveBasis);
+
+    const nomineesPaths = svg
+          .append('g')
+             .attr('class', 'paths')
+             .attr("transform", "translate(" + (margin.right + 20) + ", " + (-margin.top + margin.bottom) + ")")
+          .selectAll("path")
+          .data(series)
+          .join("path")
+             .attr('d',  area )
+             .attr('fill', function(d, i){
+                  return color(d.key);
+             });
+ 
+/////////////////////
+
+//legand
+
+var legSvg = d3.select(".legend")
+
+var size = 20
+svg.selectAll("myrect")
+  .data(groups)
+  .enter()
+  .append("rect")
+    .attr('x', (d,i) => i *200)
+    .attr('y', height -margin.bottom)
+    .attr("width", size)
+    .attr("height", size)
+    .style("fill",function(d, i){
+        return color("nominees_"+d.id)
+    });
+
+
+svg.selectAll("mylabels")
+  .data(groups)
+  .enter()
+  .append("text")
+  .attr('x', (d,i) => (i *200)+23)
+  .attr('y', height -margin.bottom + 18)
+    .style("fill", "white")
+    .text(function(d){ return d})
+    .attr("text-anchor", "left")
+    .style("alignment", "bottom")
+    .text(d => d.label);
+
+
+// const legText = legSvg
+//       .append('text')
+//         .data(groups)
+//         .join("text")
+//           //.attr('text-anchor', 'start')
+//           .attr('x', (d,i) => i *50)
+//           .attr('y', height -margin.bottom)
+//           .text(d => d.label);
+        
+//  const legRec = legSvg
+//         .append('rect')
+//           .data(groups)
+//           .join("rect")
+//             .attr('x', (d,i) => i *50)
+//             .attr('y', height -margin.bottom)
+//             .attr('width', 15)
+//             .attr('height', 15)
+//             //.attr('stroke', 'black')
+//             .attr('fill', function(d, i){
+//                   return color(d);
+//             });
+
 
 };
