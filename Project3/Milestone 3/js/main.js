@@ -8,6 +8,13 @@ const groups = [
   { id: 'asian', label: 'Asian', color: '#FF665A' },
 ];
 
+let series;
+let stack;
+let area;
+let nomineesPaths;
+let awards = new Map();
+let dataFormatted = new Map();
+let dataFormattedFiltered = new Map();
 
 // {
 //   "year_label": "1927/28 (1st)",
@@ -43,10 +50,67 @@ d3.csv('./data/academy_awards.csv').then(data => {
   //   datum.year = +datum.year;
   // });
 
-  let awards = new Map();
-  let dataFormatted = new Map();
+
 
   data.forEach(datum => {
+    
+    gatherData(dataFormatted, datum, function(){
+        return true;
+    });
+
+    awards.set("all", {id: "all", label: "All"});
+    if (!awards.has(datum.award_id)) {
+      awards.set(datum.award_id, {id: datum.award_id, label: datum.award_label});
+    }
+
+  });
+
+  {
+    var s = d3.select("#selectAward");
+    Array.from(awards.values()).forEach(datum => {
+      s.append("option")
+              .text(function (i) { return datum.label; })
+              .attr("value", datum.id);
+    });
+
+    s.on('change', () => {
+        console.log(s.node().value);
+
+        dataFormattedFiltered = new Map();
+        data.forEach(datum => {
+            
+            gatherData(dataFormattedFiltered, datum, function(){
+              
+              if("all" === s.node().value){
+                return true;
+              }else{
+                return datum.award_id === s.node().value;
+              }
+   
+            });
+      
+        });
+
+        const filtereddata = Array.from(dataFormattedFiltered.values());
+
+        series = stack(filtereddata);
+
+        nomineesPaths
+          .data(series)
+          .transition() 
+          .duration(700)
+            .attr('d', area);
+    })
+  }
+
+
+  createViz( dataFormatted, awards);
+});
+
+function gatherData(dataFormatted, datum, predicate){
+  
+  if(predicate()){
+
     if (dataFormatted.has(+datum.year)) {
 
       let yearObj = dataFormatted.get(+datum.year);
@@ -70,31 +134,32 @@ d3.csv('./data/academy_awards.csv').then(data => {
       )
     }
 
-    awards.set("all", {id: "all", label: "All"});
-    if (!awards.has(datum.award_id)) {
-      awards.set(datum.award_id, {id: datum.award_id, label: datum.award_label});
-    }
-
-  });
-
-  createViz( dataFormatted, awards);
-});
+  }
+}
 
 // Create your visualization here
 const createViz = (dataMap, awardsMap) => {
   //console.log(data);
 
-  {
-    var s = d3.select("#selectAward");
-    Array.from(awardsMap.values()).forEach(datum => {
-      s.append("option")
-              .text(function (i) { return datum.label; })
-              .property("value", datum.id);
-    });
-  }
 
 
   const data = Array.from(dataMap.values());
+
+  {
+    const yearsSlider = new rSlider({
+      target: '#yearsSlider',
+      values: [], // Set the values array here
+      range: true,
+      tooltip: true,
+      scale: true,
+      labels: false,
+      set: [], // Set the initial values here
+      onChange: values => {
+         // Handle change here
+      }
+   });
+  }
+
 
   var svg = d3.select("#viz")
     .append("svg")
@@ -115,32 +180,33 @@ const createViz = (dataMap, awardsMap) => {
 
   var y_axis = d3.axisLeft().scale(yscale);
 
-  svg.append("g")
-    .attr("transform", "translate(" + (margin.right + 20) + ", " + (-margin.top + margin.bottom) + ")")
-    .call(y_axis);
+  { //AXIS
+    svg.append("g")
+      .attr("transform", "translate(" + (margin.right + 20) + ", " + (-margin.top + margin.bottom) + ")")
+      .call(y_axis);
 
 
-  // text label for the y axis
-  svg.append("text")
-    .attr("transform", "rotate(-90)")
-    .attr("y", 0 )
-    .attr("x", -10 - (height / 2))
-    .attr("dy", "1em")
-    .attr("fill", "white")
-    .style("text-anchor", "middle")
-    .text("Number of Nominations");
+    // text label for the y axis
+    svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0)
+      .attr("x", -10 - (height / 2))
+      .attr("dy", "1em")
+      .attr("fill", "white")
+      .style("text-anchor", "middle")
+      .text("Number of Nominations");
 
-  svg.append("g")
-    .attr("transform", "translate(" + (margin.right + 20) + ", " + (height - margin.top) + ")")
-    .call(x_axis)
+    svg.append("g")
+      .attr("transform", "translate(" + (margin.right + 20) + ", " + (height - margin.top) + ")")
+      .call(x_axis)
 
-  // text label for the x axis
-  svg.append("text")
-    .attr("transform", "translate(" + (width / 2) + " ," + (height - margin.bottom ) + ")")
-    .attr("fill", "white")
-    .style("text-anchor", "middle")
-    .text("Year");
-
+    // text label for the x axis
+    svg.append("text")
+      .attr("transform", "translate(" + (width / 2) + " ," + (height - margin.bottom) + ")")
+      .attr("fill", "white")
+      .style("text-anchor", "middle")
+      .text("Year");
+  }
     ///////////////////
     console.log(data);
 
@@ -150,15 +216,15 @@ const createViz = (dataMap, awardsMap) => {
     .domain(keys)
     .range(d3.schemeSet2);
     
-    var stack = d3.stack()
+    stack = d3.stack()
           .keys(keys)
           .order(d3.stackOrderAscending)
           .offset(d3.stackOffsetNone);
 
-    let series = stack(data);
-    console.log(series);
+    series = stack(data);
+    //console.log(series);
 
-    var area = d3.area()
+    area = d3.area()
           .x(function(d) { 
               return xscale(d.data.year); 
           })
@@ -170,7 +236,7 @@ const createViz = (dataMap, awardsMap) => {
           })
           .curve(d3.curveBasis);
 
-    const nomineesPaths = svg
+    nomineesPaths = svg
           .append('g')
              .attr('class', 'paths')
              .attr("transform", "translate(" + (margin.right + 20) + ", " + (-margin.top + margin.bottom) + ")")
@@ -263,7 +329,7 @@ svg.selectAll("mylabels")
     stats.attr('x', x)
         .text(d =>  {
           let year = (Math.round(xscale.invert(x - 40)));
-          console.log(year);
+          //console.log(year);
           let obj = dataMap.get(year);
           if(obj){
             return obj["nominees_"+d.id] + " " + d.label;
