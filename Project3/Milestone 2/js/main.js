@@ -70,12 +70,14 @@ d3.csv('./data/academy_awards.csv').then(data => {
     }
   });
 
-  createViz( Array.from(dataFormatted.values()));
+  createViz( dataFormatted);
 });
 
 // Create your visualization here
-const createViz = (data) => {
+const createViz = (dataMap) => {
   //console.log(data);
+
+  const data = Array.from(dataMap.values());
 
   var svg = d3.select("#viz")
     .append("svg")
@@ -85,11 +87,11 @@ const createViz = (data) => {
     //https://github.com/d3/d3-array/blob/v2.12.1/README.md#extent
   var xscale = d3.scaleLinear()
     .domain(d3.extent(data, function (d) { return d.year }))
-    .range([0, width - margin.left - 10]);
+    .range([0, width - margin.right - 50]);
 
   var yscale = d3.scaleLinear()
     .domain([0, d3.max(data, function (d) { return d.nominees_total })])
-    .range([height - margin.bottom, margin.top]);
+    .range([height - margin.bottom, margin.top + 50]);
 
   var x_axis = d3.axisBottom().scale(xscale);
   x_axis.tickFormat(x => `${x}`);
@@ -201,7 +203,7 @@ svg.selectAll("mylabels")
 
   let line = tooltipG.append("line")
           .attr("x1", (width /2) - margin.right )
-          .attr("y1", margin.bottom)
+          .attr("y1", margin.bottom - 50)
           .attr("x2", (width /2) - margin.right)
           .attr("y2",height - margin.top)
           .attr("style", "stroke:rgb(255,0,0);stroke-width:2");
@@ -214,6 +216,22 @@ svg.selectAll("mylabels")
           .style("alignment", "bottom")
           .text(Math.round(xscale.invert((width /2) - margin.right)));
 
+  let stats = tooltipG.selectAll("mylabels")
+          .data(groups)
+          .enter()
+          .append("text")
+          .attr('x', (d,i) => (width /2) - margin.right + 10)
+          .attr('y', (d,i) => (i * 15)+ 20)
+            .style("fill", "white")
+            .text(function(d){ return d})
+            .attr("text-anchor", "right")
+            .style("alignment", "top")
+            .text(d =>  {
+                  let year = (Math.round(xscale.invert((width /2) - margin.right)));
+                  let obj = dataMap.get(year);
+                  return obj["nominees_"+d.id] + " " + d.label;
+            });
+
   nomineesPaths.on('mousemove', e => {
   
     let x = e.offsetX;
@@ -222,8 +240,25 @@ svg.selectAll("mylabels")
         .attr("x2", x);
 
         //https://github.com/d3/d3-scale/blob/v3.3.0/README.md#continuous_invert
-        text.text(Math.round(xscale.invert(x- margin.right - 20)));
-        text.attr('x', x)
+        text.text(Math.round(xscale.invert(x- margin.right - 20)))
+            .attr('x', x);
+
+    stats.attr('x', x)
+        .text(d =>  {
+          let year = (Math.round(xscale.invert(x - 40)));
+          console.log(year);
+          let obj = dataMap.get(year);
+          if(obj){
+            return obj["nominees_"+d.id] + " " + d.label;
+          }
+        });
+    
+      if(x > (width /2)){
+          toolTipX = x - 150;
+          stats.attr('x', toolTipX);
+      }else{
+        stats.attr('x', x + 10);
+      }
   });
 
 };
