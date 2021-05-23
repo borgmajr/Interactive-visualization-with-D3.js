@@ -98,7 +98,7 @@
          onChange: values => {
             // Handle change here
          }
-  });
+      });
    ```
    * In the configuration, the element `values` needs to be initialized with an array of all the years in our dataset. D3 makes it quite easy with the `.range()` function. You can learn more about D3 range in this [Observable notebook](https://observablehq.com/@d3/d3-range). Pay attention to the fact that this function has a non-inclusive upper bound!
    * Then, set the initial values of the slider to the first and the last year in our dataset.

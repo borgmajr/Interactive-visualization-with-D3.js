@@ -43,7 +43,8 @@ d3.csv('./data/academy_awards.csv').then(data => {
   //   datum.year = +datum.year;
   // });
 
-  let dataFormatted = new Map()
+  let awards = new Map();
+  let dataFormatted = new Map();
 
   data.forEach(datum => {
     if (dataFormatted.has(+datum.year)) {
@@ -68,14 +69,30 @@ d3.csv('./data/academy_awards.csv').then(data => {
         }
       )
     }
+
+    awards.set("all", {id: "all", label: "All"});
+    if (!awards.has(datum.award_id)) {
+      awards.set(datum.award_id, {id: datum.award_id, label: datum.award_label});
+    }
+
   });
 
-  createViz( dataFormatted);
+  createViz( dataFormatted, awards);
 });
 
 // Create your visualization here
-const createViz = (dataMap) => {
+const createViz = (dataMap, awardsMap) => {
   //console.log(data);
+
+  {
+    var s = d3.select("#selectAward");
+    Array.from(awardsMap.values()).forEach(datum => {
+      s.append("option")
+              .text(function (i) { return datum.label; })
+              .property("value", datum.id);
+    });
+  }
+
 
   const data = Array.from(dataMap.values());
 
